@@ -16,8 +16,19 @@ points.className = "score";
 function pointsInsert(pointsNumber) {
     return points.innerHTML = `<p><span>Кол-во ходов:</span> ${pointsNumber}</p>`;
 }
-pointsInsert(pointsNumber);
 container.append(points);
+
+pointsInsert(pointsNumber);
+const nextPoint = () => {
+    pointsNumber ++;
+    pointsInsert(pointsNumber);
+}
+
+const checkDesishion = () => {
+    let btnsArray = Array.from(btns);
+             btnsArray.pop();
+             return btnsArray.every((element, index) => {return Number(element.textContent) === index + 1});
+}
 
 //add timer
 timer.className = "score";
@@ -33,8 +44,11 @@ container.append(timer, stopTimerbtn);
 function createPuzzle () {
     return random.map(element => {
         const box = document.createElement('div');
+        box.draggable = true;
         if (element === '') box.classList = "hidden"
-        else box.innerHTML = `<p>${element}</p>`;
+        else {
+            box.innerHTML = `<p>${element}</p>`
+        };
         return box
     })    
 }
@@ -50,7 +64,6 @@ const btns = document.body.querySelectorAll('.fifteen div');
 function emptyOrder() {
     return Array.from(btns).map(node => node.textContent).indexOf('');
 }
-
 let order = emptyOrder();
 
 //Create message 'you win'
@@ -66,43 +79,88 @@ points.after(alert);
 function move() {
     
     for (let btn of btns) {
-        btn.addEventListener('click', (e) => {
+
+        const moveHandler = e => {
+            
+            
             //console.log(typeof +e.target.textContent)
             //if we click empty element
             if (btn.textContent === '') return;
             //start timer
             if (timer.textContent === "00:00") time(e);
 
-            //move if we click frind element
+            //move if we click friend element
             let friend = Math.abs(Array.from(btns).indexOf(btn) - order);
             const condition = (friend == 4) || (friend == 1);
-            if ( !condition ) return;
+            if (!condition) return;
 
             btns.forEach(
                 (element) => {
-                if (element.classList.contains("hidden")) {
-                    element.classList.remove("hidden");
-                    element.innerHTML = btn.innerHTML;
-                }
-                }
+                    if (element.classList.contains("hidden")) {
+                        element.classList.remove("hidden");
+                        element.innerHTML = btn.innerHTML;
+                    }
+                }      
             );
+
             btn.classList.add('hidden');
             btn.textContent = '';
+
             order = emptyOrder();
-            pointsNumber ++;
-            pointsInsert(pointsNumber);
+
+            nextPoint();
 
              //check on right checkDesishon
-             let btnsArray = Array.from(btns);
-             btnsArray.pop();
-             let checkDesishon = btnsArray.every((element, index) => {return Number(element.textContent) === index + 1});
-             if (checkDesishon) {
-                alert.classList.remove('hidden');
-                
+             if (checkDesishion()) alert.classList.remove('hidden');
+        }
+
+        btn.addEventListener('click', moveHandler);
+
+        btn.addEventListener(`dragstart`, (e) => {
+            if (btn.textContent) 
+            {
+                btn.classList.add(`selected`);
+                if (timer.textContent === "00:00") time(e);
             }
+        });
+
+        btn.addEventListener(`dragend`, () => {
+            if (!btn.textContent) btn.classList.remove(`selected`);
+
             
-    })
-}
+            if (checkFriendDraggable()) btn.classList.remove(`selected`);;
+        });
+
+        //Check condition to drag: friend or not
+        const checkFriendDraggable = () => {
+            let friend = Math.abs(Array.from(btns).indexOf(document.querySelector('.selected')) - order);
+            const condition = (friend == 4) || (friend == 1);
+            return !condition;
+        }
+
+        btn.addEventListener('dragover', e => {
+
+            if (!btn.textContent) e.preventDefault();
+        });
+
+        btn.addEventListener('drop', e => {
+            if (checkFriendDraggable()) return;
+            if (!btn.textContent) {
+                const element = document.querySelector('.selected');  
+                e.target.classList.remove("hidden");
+                e.target.innerHTML = element.innerHTML;
+                element.classList.add('hidden');
+                element.textContent = '';                
+            }
+            order = emptyOrder();
+            nextPoint();
+            if (checkDesishion()) alert.classList.remove('hidden');
+            
+        });    
+        
+            
+
+    }
 }
 
 move();
