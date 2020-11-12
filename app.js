@@ -1,6 +1,7 @@
 import random from "./random.js";
+import {timer, time} from "./timer.js";
+
 random[random.indexOf(0)] = '';
-console.log(random);
 
 //Create containers element
 const container = document.createElement('div');
@@ -17,6 +18,15 @@ function pointsInsert(pointsNumber) {
 }
 pointsInsert(pointsNumber);
 container.append(points);
+
+//add timer
+timer.className = "score";
+const stopTimerbtn = document.createElement('button');
+stopTimerbtn.textContent = "Stop game";
+stopTimerbtn.classList = 'stop-btn';
+stopTimerbtn.addEventListener('click', (e) => time(e));
+container.append(timer, stopTimerbtn);
+
 
 
 //Create puzzle element
@@ -57,12 +67,11 @@ function move() {
     
     for (let btn of btns) {
         btn.addEventListener('click', (e) => {
-        // 
-
-           
-
+            //console.log(typeof +e.target.textContent)
             //if we click empty element
             if (btn.textContent === '') return;
+            //start timer
+            if (timer.textContent === "00:00") time(e);
 
             //move if we click frind element
             let friend = Math.abs(Array.from(btns).indexOf(btn) - order);
@@ -89,7 +98,7 @@ function move() {
              let checkDesishon = btnsArray.every((element, index) => {return Number(element.textContent) === index + 1});
              if (checkDesishon) {
                 alert.classList.remove('hidden');
-                 console.log("You win");
+                
             }
             
     })
