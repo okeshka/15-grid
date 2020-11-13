@@ -1,5 +1,6 @@
 import random from "./random.js";
 import {timer, time} from "./timer.js";
+import checkFriend from "./chekFriend.js"
 
 random[random.indexOf(0)] = '';
 
@@ -14,9 +15,8 @@ let pointsNumber = '0';
 const points = document.createElement('div');
 points.className = "score";
 function pointsInsert(pointsNumber) {
-    return points.innerHTML = `<p><span>Кол-во ходов:</span> ${pointsNumber}</p>`;
+    return points.innerHTML = `<span>Steps: ${pointsNumber}</span>`;
 }
-container.append(points);
 
 pointsInsert(pointsNumber);
 const nextPoint = () => {
@@ -35,8 +35,11 @@ timer.className = "score";
 const stopTimerbtn = document.createElement('button');
 stopTimerbtn.textContent = "Stop game";
 stopTimerbtn.classList = 'stop-btn';
+const infoContainer = document.createElement("section");
+infoContainer.className = "info-container";
 stopTimerbtn.addEventListener('click', (e) => time(e));
-container.append(timer, stopTimerbtn);
+infoContainer.append(timer, stopTimerbtn, points)
+container.append(infoContainer);
 
 
 
@@ -61,6 +64,7 @@ document.body.append(container);
 const btns = document.body.querySelectorAll('.fifteen div');
 
 //define number of empty cell
+
 function emptyOrder() {
     return Array.from(btns).map(node => node.textContent).indexOf('');
 }
@@ -71,7 +75,7 @@ let order = emptyOrder();
 const alert = document.createElement('div');
 alert.innerHTML = `<p>YOU WIN !!!</p>` 
 alert.classList.add('alert', 'hidden');
-points.after(alert);
+document.body.append(alert);
 
 
 
@@ -82,16 +86,16 @@ function move() {
 
         const moveHandler = e => {
             
-            
-            //console.log(typeof +e.target.textContent)
             //if we click empty element
             if (btn.textContent === '') return;
             //start timer
             if (timer.textContent === "00:00") time(e);
 
+            
+
+            const condition = checkFriend(Array.from(btns).indexOf(btn), order);
             //move if we click friend element
-            let friend = Math.abs(Array.from(btns).indexOf(btn) - order);
-            const condition = (friend == 4) || (friend == 1);
+
             if (!condition) return;
 
             btns.forEach(
@@ -125,16 +129,12 @@ function move() {
         });
 
         btn.addEventListener(`dragend`, () => {
-            if (!btn.textContent) btn.classList.remove(`selected`);
-
-            
-            if (checkFriendDraggable()) btn.classList.remove(`selected`);;
+            btn.classList.remove(`selected`);
         });
 
         //Check condition to drag: friend or not
         const checkFriendDraggable = () => {
-            let friend = Math.abs(Array.from(btns).indexOf(document.querySelector('.selected')) - order);
-            const condition = (friend == 4) || (friend == 1);
+            const condition = checkFriend(Array.from(btns).indexOf(document.querySelector('.selected')), order);
             return !condition;
         }
 
@@ -151,15 +151,13 @@ function move() {
                 e.target.innerHTML = element.innerHTML;
                 element.classList.add('hidden');
                 element.textContent = '';                
+            
+                order = emptyOrder();
+                nextPoint();
             }
-            order = emptyOrder();
-            nextPoint();
             if (checkDesishion()) alert.classList.remove('hidden');
             
         });    
-        
-            
-
     }
 }
 
